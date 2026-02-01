@@ -1,0 +1,45 @@
+services:
+  reverse-proxy:
+    image: traefik:v3.1
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080" # Dashboard
+    volumes:
+      - /run/docker.sock:/var/run/docker.sock:ro
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: govtech_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d govtech_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+  # Service placeholders (will be built in subsequent steps)
+  # auth-service:
+  #   build: ../services/auth
+  #   labels:
+  #     - "traefik.http.routers.auth.rule=PathPrefix(`/api/auth`)"
+  #   depends_on: [db]
+
+  # marketing-app:
+  #   build: ../apps/marketing
+  #   labels:
+  #     - "traefik.http.routers.marketing.rule=PathPrefix(`/`)"
+
+volumes:
+  postgres_data:

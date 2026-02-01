@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Opportunity {
+  id              String   @id @default(uuid())
+  title           String
+  agency          String
+  description     String?
+  value           Float?
+  deadline        DateTime?
+  status          Status   @default(NEW)
+  market          Market   @default(GOVERNMENT)
+  scoring         Json?    # { fit: number, risk: number, ppMatch: number }
+  teamingNotes    String?
+  winThemes       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+enum Status {
+  NEW
+  QUALIFY
+  CAPTURE
+  PROPOSAL
+  SUBMITTED
+  AWARDED
+  LOST
+}
+
+enum Market {
+  GOVERNMENT
+  COMMERCIAL
+}
